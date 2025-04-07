@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panier d'Achat OOJ</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, button { margin: 5px; padding: 5px; }
+    .product-list, .cart { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Panier d'Achat (Orienté Objet)</h1>
+
+  <div class="product-list">
+    <h2>Produits disponibles</h2>
+    <select id="productSelect"></select>
+    <input type="number" id="quantityInput" placeholder="Quantité" min="1" value="1">
+    <button onclick="ajouterAuPanier()">Ajouter au panier</button>
+  </div>
+
+  <div class="cart">
+    <h2>Mon panier</h2>
+    <ul id="cartItems"></ul>
+    <p><strong>Total : </strong><span id="totalPrix">0.00</span> €</p>
+  </div>
+
+  <script>
+    class Product {
+      constructor(id, name, price) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+      }
+    }
+
+    class ShoppingCartItem {
+      constructor(product, quantity) {
+        this.product = product;
+        this.quantity = quantity;
+      }
+
+      getTotalPrice() {
+        return this.product.price * this.quantity;
+      }
+    }
+
+    class ShoppingCart {
+      constructor() {
+        this.items = [];
+      }
+
+      addItem(product, quantity) {
+        const existingItem = this.items.find(item => item.product.id === product.id);
+        if (existingItem) {
+          existingItem.quantity += quantity;
+        } else {
+          this.items.push(new ShoppingCartItem(product, quantity));
+        }
+        this.displayCart();
+      }
+
+      removeItem(productId) {
+        this.items = this.items.filter(item => item.product.id !== productId);
+        this.displayCart();
+      }
+
+      displayCart() {
+        const cartList = document.getElementById("cartItems");
+        cartList.innerHTML = "";
+
+        let total = 0;
+        this.items.forEach(item => {
+          const li = document.createElement("li");
+          li.textContent = `${item.product.name} x${item.quantity} = ${item.getTotalPrice().toFixed(2)} €`;
+
+          const removeBtn = document.createElement("button");
+          removeBtn.textContent = "Supprimer";
+          removeBtn.onclick = () => this.removeItem(item.product.id);
+          li.appendChild(removeBtn);
+
+          cartList.appendChild(li);
+          total += item.getTotalPrice();
+        });
+
+        document.getElementById("totalPrix").textContent = total.toFixed(2);
+      }
+    }
+
+    // Produits disponibles
+    const produits = [
+      new Product(1, "Pomme", 0.5),
+      new Product(2, "Banane", 0.3),
+      new Product(3, "Orange", 0.7),
+    ];
+
+    const panier = new ShoppingCart();
+
+    // Remplir la liste déroulante
+    const select = document.getElementById("productSelect");
+    produits.forEach(prod => {
+      const option = document.createElement("option");
+      option.value = prod.id;
+      option.textContent = `${prod.name} - ${prod.price} €`;
+      select.appendChild(option);
+    });
+
+    function ajouterAuPanier() {
+      const prodId = parseInt(select.value);
+      const quantite = parseInt(document.getElementById("quantityInput").value);
+      const produit = produits.find(p => p.id === prodId);
+      if (produit && quantite > 0) {
+        panier.addItem(produit, quantite);
+      }
+    }
+  </script>
+</body>
+</html>
